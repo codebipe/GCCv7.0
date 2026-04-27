@@ -1,0 +1,1801 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Shotcost CV3</title>
+    <meta name="color-scheme" content="light" />
+    <link rel="stylesheet" href="./CV3.styles.css" />
+    <style>
+      :root {
+        --library-category-header-bg: #f0fdf4;
+        --library-category-header-color: #166534;
+      }
+      .list-category-h {
+        background: var(--library-category-header-bg) !important;
+        color: var(--library-category-header-color) !important;
+      }
+      .card-h h2 {
+        font-size: 16px;
+        line-height: 1.15;
+      }
+      #metaStatus {
+        display: none !important;
+      }
+      #viewSettings .grid.two {
+        grid-template-columns: 1fr !important;
+      }
+      #viewSettings .card-b {
+        padding-top: 24px;
+        padding-bottom: 28px;
+      }
+      #viewSettings .divider {
+        margin: 20px 0;
+      }
+      #viewSettings .section-h {
+        margin: 14px 0 10px;
+      }
+      #viewSettings .form-grid {
+        gap: 18px;
+      }
+      #viewBuilder .card-actions {
+        flex-wrap: nowrap;
+      }
+      #viewBuilder .card-actions .btn {
+        flex: 0 0 auto;
+      }
+      .modal-card {
+        max-height: calc(100vh - 24px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      dialog.modal {
+        overflow: hidden;
+      }
+      .modal-b {
+        min-height: 0;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: auto;
+      }
+      html.modal-open,
+      body.modal-open {
+        overflow-y: auto;
+        overscroll-behavior: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      html.modal-open::-webkit-scrollbar,
+      body.modal-open::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"></div>
+          <div class="brand-text">
+            <div class="brand-title">Shotcost CV3</div>
+            <div class="brand-sub" id="metaStatus">Local-only • Autosaves to this browser</div>
+          </div>
+        </div>
+
+        <nav class="tabs" aria-label="Sections">
+          <button class="tab is-active" data-route="builder" type="button">Builder</button>
+          <button class="tab" data-route="library" type="button">Library</button>
+          <button class="tab" data-route="ingredients" type="button">Ingredients</button>
+          <button class="tab" data-route="milks" type="button">Milks</button>
+          <button class="tab" data-route="modifiers" type="button">Modifiers</button>
+          <button class="tab" data-route="cups" type="button">Cups</button>
+          <button class="tab" data-route="settings" type="button">Settings</button>
+        </nav>
+      </header>
+
+      <main class="main" id="main">
+        <!-- BUILDER -->
+        <section class="view is-active" id="viewBuilder" data-view="builder" aria-label="Drink Builder">
+          <div class="grid two">
+            <div class="card">
+              <div class="card-h">
+                <div>
+                  <h2>Drink Builder</h2>
+                </div>
+                <div class="card-actions">
+                  <button class="btn" id="btnNewDraft" type="button">New</button>
+                  <button class="btn primary" id="btnSaveDrink" type="button">Save</button>
+                </div>
+              </div>
+              <div class="card-b">
+                <div class="form-grid">
+                  <div>
+                    <label for="drinkName">Drink name</label>
+                    <input id="drinkName" autocomplete="off" placeholder="e.g., Vanilla Latte" />
+                    <div class="field-error" id="errDrinkName"></div>
+                  </div>
+	                  <div>
+	                    <label for="drinkCategory">Category</label>
+	                    <select id="drinkCategory" aria-label="Drink category"></select>
+	                  </div>
+                  <div class="span2">
+                    <label>Cups used</label>
+                    <div class="check-grid" id="builderCupList" aria-label="Cups used list"></div>
+                    <div class="row-actions">
+                      <button class="btn" id="btnBuilderCupAll" type="button">Select all</button>
+                      <button class="btn" id="btnBuilderCupNone" type="button">None</button>
+                    </div>
+                    <p class="hint">Click a cup to select it. The last selected cup is used for per-cup editing.</p>
+                  </div>
+                  <div class="span2">
+                    <label>Milks used</label>
+                    <div class="check-grid" id="builderMilkList" aria-label="Milks used list"></div>
+                    <div class="row-actions">
+                      <button class="btn" id="btnBuilderMilkAll" type="button">Select all</button>
+                      <button class="btn" id="btnBuilderMilkNone" type="button">None</button>
+                    </div>
+                  </div>
+	                  <div>
+	                    <label for="sellPrice">Selling price</label>
+	                    <div class="money">
+	                      <span class="prefix" id="currencyPrefix">$</span>
+	                      <input id="sellPrice" inputmode="decimal" placeholder="0.00" />
+	                    </div>
+	                  </div>
+                  <div>
+                    <label for="targetMargin">Target margin % (optional)</label>
+                    <div class="with-btn">
+                      <input id="targetMargin" inputmode="decimal" placeholder="e.g., 70" />
+                      <button class="btn" id="btnSetPriceFromMargin" type="button">Set price</button>
+                    </div>
+                    <p class="hint">Sets selling price to hit target margin based on current costs.</p>
+                  </div>
+                  <div class="span2">
+                    <label for="drinkNotes">Notes (optional)</label>
+                    <textarea id="drinkNotes" placeholder="Recipe notes, prep steps, modifiers, etc."></textarea>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="section-h">
+                  <h3>Ingredients</h3>
+                  <div class="section-actions">
+                    <button class="btn" id="btnAddLine" type="button">Add line</button>
+                  </div>
+                </div>
+
+                <div class="table-wrap" id="builderTableWrap"></div>
+
+                <div class="divider"></div>
+
+                <div class="section-h">
+                  <h3>Extra costs</h3>
+                  <p class="muted small">Optional per-drink add-ons.</p>
+                </div>
+                <div class="form-grid">
+	                  <div>
+	                    <label for="salesTaxPct">Sales tax %</label>
+	                    <input id="salesTaxPct" inputmode="decimal" placeholder="e.g., 7.25" />
+	                    <p class="hint">Used to calculate the consumer purchase price (selling price + tax).</p>
+	                  </div>
+	                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <div>
+                  <h2>Results</h2>
+                  <p class="muted">Breakdown of costs and pricing.</p>
+                </div>
+                <div class="results-tabs-wrap">
+                  <div class="results-tabs" role="tablist" aria-label="Results tabs">
+                    <button class="mini-tab is-active" id="tabResultsSummary" type="button" data-results-tab="summary">Summary</button>
+                    <button class="mini-tab" id="tabResultsCC" type="button" data-results-tab="cc">Credit card</button>
+                  </div>
+                  <div class="pill hidden" id="pillDraft" aria-hidden="true">Draft</div>
+                </div>
+              </div>
+              <div class="card-b">
+	                <div class="kpi" id="resultsSummary">
+	                  <div class="tile">
+	                    <div class="k">Total cost</div>
+	                    <div class="v" id="kpiTotalCost">$0.00</div>
+	                    <div class="s" id="kpiCostHint">—</div>
+	                  </div>
+		                  <div class="tile">
+		                    <div class="k" id="lblSellPrice">Selling price</div>
+		                    <div class="v" id="kpiSellPrice">$0.00</div>
+		                    <div class="s" id="kpiPriceHint">—</div>
+		                  </div>
+		                  <div class="tile" id="tileConsumerPrice">
+		                    <div class="k">Consumer price (with tax)</div>
+		                    <div class="v" id="kpiConsumerPrice">$0.00</div>
+		                    <div class="s" id="kpiConsumerHint">—</div>
+		                  </div>
+                  <div class="tile">
+                    <div class="k">Profit</div>
+                    <div class="v" id="kpiProfit">$0.00</div>
+                    <div class="s" id="kpiProfitHint">—</div>
+                  </div>
+                  <div class="tile">
+                    <div class="k">Profit (card)</div>
+                    <div class="v" id="kpiProfitCard">$0.00</div>
+                    <div class="s" id="kpiProfitCardHint">After credit card fee.</div>
+                  </div>
+                  <div class="tile">
+                    <div class="k">Margin</div>
+                    <div class="v" id="kpiMargin">—</div>
+                    <div class="s" id="kpiMarginHint">—</div>
+                  </div>
+                  <div class="tile">
+                    <div class="k">Margin (card)</div>
+                    <div class="v" id="kpiMarginCard">—</div>
+                    <div class="s" id="kpiMarginCardHint">After credit card fee.</div>
+                  </div>
+                </div>
+
+                <div id="resultsCC" class="hidden" aria-label="Credit card processing fee">
+                  <div class="form-grid">
+                    <div>
+                      <label for="ccFeePct">Card fee %</label>
+                      <input id="ccFeePct" inputmode="decimal" placeholder="e.g., 2.6" />
+                      <p class="hint">Stored globally (doesn't change when you switch drinks).</p>
+                    </div>
+                    <div>
+                      <label for="ccFeeFixed">Fixed fee (per transaction)</label>
+                      <div class="money">
+                        <span class="prefix" id="currencyPrefix7">$</span>
+                        <input id="ccFeeFixed" inputmode="decimal" placeholder="e.g., 0.15" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="divider"></div>
+                  <div class="kpi">
+                    <div class="tile">
+                      <div class="k">Estimated card fee</div>
+                      <div class="v" id="kpiCcFee">$0.00</div>
+                      <div class="s" id="kpiCcFeeHint">Based on consumer price (with tax).</div>
+                    </div>
+                    <div class="tile">
+                      <div class="k">Profit (card)</div>
+                      <div class="v" id="kpiProfitCc">$0.00</div>
+                      <div class="s" id="kpiProfitCcHint">Profit after card fee.</div>
+                    </div>
+                    <div class="tile">
+                      <div class="k">Margin (card)</div>
+                      <div class="v" id="kpiMarginCc">—</div>
+                      <div class="s" id="kpiMarginCcHint">Margin after card fee.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+                <div class="section-h">
+                  <h3>Cost breakdown</h3>
+                </div>
+                <div class="table-wrap" id="breakdownWrap"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LIBRARY -->
+        <section class="view" id="viewLibrary" data-view="library" aria-label="Drink Library">
+          <div class="card">
+            <div class="card-h">
+              <div>
+                <h2>Library</h2>
+	              </div>
+		              <div class="card-actions">
+                    <button class="btn" id="btnLibraryExpandAll" type="button" title="Expand all drink variants" aria-label="Expand all drink variants">↓</button>
+                    <button class="btn" id="btnLibraryCollapseAll" type="button" title="Collapse all drink variants" aria-label="Collapse all drink variants">↑</button>
+		                <input class="search" id="librarySearch" placeholder="Search drinks…" autocomplete="off" />
+		                <button class="btn" id="btnCreateCategory" type="button">Category create</button>
+		                <button class="btn" id="btnLibraryOrganize" type="button">Organize</button>
+		                <button class="btn danger hidden" id="btnDeleteSelectedDrinks" type="button">Delete selected</button>
+			              </div>
+		            </div>
+		            <div class="card-b">
+	              <div class="split">
+	                <div class="pane" id="libraryListWrap" aria-label="Saved drinks list"></div>
+	                <div class="pane detail" id="libraryDetailWrap" aria-label="Selected drink details"></div>
+	              </div>
+	            </div>
+	          </div>
+	        </section>
+
+        <!-- INGREDIENTS -->
+        <section class="view" id="viewIngredients" data-view="ingredients" aria-label="Ingredient Library">
+          <div class="card">
+            <div class="card-h">
+              <div>
+                <h2>Ingredients</h2>
+              </div>
+              <div class="card-actions">
+                <input class="search" id="ingredientSearch" placeholder="Search ingredients…" autocomplete="off" />
+                <button class="btn primary" id="btnNewIngredient" type="button">New ingredient</button>
+                <button class="btn" id="btnCreateIngredientCategory" type="button">Category create</button>
+              </div>
+            </div>
+            <div class="card-b">
+              <div class="table-wrap" id="ingredientTableWrap"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MILKS -->
+        <section class="view" id="viewMilks" data-view="milks" aria-label="Milk Library">
+          <div class="card">
+            <div class="card-h">
+              <div>
+                <h2>Milk Library</h2>
+              </div>
+              <div class="card-actions">
+                <input class="search" id="milkSearch" placeholder="Search milks…" autocomplete="off" />
+                <button class="btn primary" id="btnNewMilk" type="button">New milk</button>
+                <button class="btn" id="btnCreateMilkCategory" type="button">Category create</button>
+              </div>
+            </div>
+            <div class="card-b">
+              <div class="table-wrap" id="milkTableWrap"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MODIFIERS -->
+        <section class="view" id="viewModifiers" data-view="modifiers" aria-label="Modifier Catalog">
+          <div class="card">
+            <div class="card-h">
+              <div>
+                <h2>Modifiers</h2>
+                <p class="muted">Global add-ons for report matching and profit adjustments.</p>
+              </div>
+              <div class="card-actions">
+                <input class="search" id="modifierSearch" placeholder="Search modifiers…" autocomplete="off" />
+                <button class="btn primary" id="btnNewModifier" type="button">New modifier</button>
+              </div>
+            </div>
+            <div class="card-b">
+              <div class="table-wrap" id="modifierTableWrap"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CUPS -->
+        <section class="view" id="viewCups" data-view="cups" aria-label="Cup Library">
+          <div class="card">
+            <div class="card-h">
+              <div>
+                <h2>Cup Library</h2>
+              </div>
+              <div class="card-actions">
+                <input class="search" id="cupSearch" placeholder="Search cups…" autocomplete="off" />
+                <button class="btn primary" id="btnNewCup" type="button">New cup</button>
+              </div>
+            </div>
+            <div class="card-b">
+              <div class="table-wrap" id="cupTableWrap"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- AI CSV MATCHER -->
+        <section class="view" id="viewReports" data-view="reports" aria-label="AI CSV Matcher">
+          <div class="grid">
+            <div class="card">
+              <div class="card-h">
+                <div>
+                  <h2>AI CSV Matcher</h2>
+                  <p class="muted">Upload sales CSV, detect item + qty + modifiers with AI, and match to your Library.</p>
+                </div>
+                <div class="card-actions">
+                  <button class="btn" id="btnClearAiCsvReport" type="button">Clear</button>
+                  <button class="btn primary" id="btnRunAiCsvReport" type="button">Analyze CSV</button>
+                </div>
+              </div>
+              <div class="card-b">
+                <div class="form-grid">
+                  <div class="span2">
+                    <label for="aiCsvApiKey">Gemini API key</label>
+                    <input
+                      id="aiCsvApiKey"
+                      type="text"
+                      autocomplete="off"
+                      placeholder="Enter Gemini API key (optional)"
+                    />
+                    <p class="hint">Left blank uses the key configured in CV2.</p>
+                  </div>
+                  <div class="span2">
+                    <label for="aiCsvUpload">CSV upload</label>
+                    <div class="csv-upload-box">
+                      <input id="aiCsvUpload" type="file" accept=".csv,text/csv" />
+                    </div>
+                    <p class="hint">Upload the Square CSV report file for AI analysis.</p>
+                  </div>
+                  <div class="span2">
+                    <label class="ai-inline-check">
+                      <input id="aiCsvIncludeRaw" type="checkbox" />
+                      <span>Show raw AI response</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <div>
+                  <h2>Detected & Matched Items</h2>
+                  <p class="muted">AI-detected rows matched against your saved drink library.</p>
+                </div>
+              </div>
+              <div class="card-b">
+                <div class="hint" id="aiCsvStatus">No CSV analyzed yet.</div>
+                <div id="aiCsvSummary"></div>
+                <div id="aiCsvRows"></div>
+                <div id="aiCsvRaw"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="view" id="viewSettings" data-view="settings" aria-label="Settings">
+          <div class="grid two">
+            <div class="card">
+              <div class="card-h">
+                <div>
+                  <h2>Settings</h2>
+                  <p class="muted">This app stores everything in your browser (localStorage).</p>
+                </div>
+              </div>
+              <div class="card-b">
+                <div class="form-grid">
+                  <div>
+                    <label for="currencyCode">Currency</label>
+                    <select id="currencyCode">
+                      <option value="USD">USD ($)</option>
+                      <option value="CAD">CAD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="AUD">AUD ($)</option>
+                    </select>
+                  </div>
+	                  <div>
+		                    <label>Theme</label>
+		                    <div class="results-tabs" role="tablist" aria-label="Theme toggle">
+		                      <button class="mini-tab" id="themeDark" type="button" data-theme="dark">Dark</button>
+		                      <button class="mini-tab" id="themeLight" type="button" data-theme="light">Light</button>
+		                    </div>
+		                    <p class="hint">Saved to this browser and applied instantly.</p>
+		                  </div>
+                  <div class="span2">
+                    <label>Library category headers</label>
+                    <div class="form-grid">
+                      <div>
+                        <label for="libraryCategoryHeaderBg">Header background</label>
+                        <input id="libraryCategoryHeaderBg" type="color" value="#f0fdf4" />
+                      </div>
+                      <div>
+                        <label for="libraryCategoryHeaderText">Header text</label>
+                        <input id="libraryCategoryHeaderText" type="color" value="#166534" />
+                      </div>
+                    </div>
+                    <div class="row-actions" style="margin-top: 10px;">
+                      <button class="btn" id="btnResetLibraryCategoryHeaderColors" type="button">Reset colors</button>
+                    </div>
+                    <p class="hint">Controls the category headers used to group drinks in the Library.</p>
+                  </div>
+	                  <div class="span2">
+	                    <label>Sales tax mode</label>
+	                    <div class="results-tabs" role="tablist" aria-label="Sales tax mode">
+	                      <button class="mini-tab" id="taxModeAdditive" type="button" data-tax-mode="additive">Tax on top</button>
+	                      <button class="mini-tab" id="taxModeInclusive" type="button" data-tax-mode="inclusive">Tax included</button>
+	                    </div>
+	                    <p class="hint">Tax on top: consumer price = selling price + tax. Tax included: selling price already includes tax.</p>
+	                  </div>
+		                </div>
+
+                <div class="divider"></div>
+                <div class="section-h">
+                  <h3>Data</h3>
+                  <p class="muted small">Export regularly if you care about preserving data across devices/browsers.</p>
+                </div>
+	                <div class="row-actions">
+	                  <button class="btn" id="btnExport2" type="button">Export JSON</button>
+	                  <button class="btn" id="btnImport2" type="button">Import JSON</button>
+	                  <button class="btn danger" id="btnWipe" type="button">Wipe all data</button>
+	                </div>
+	                <div class="hint">
+	                  Tip: Syrups/sauces are easiest if you set the unit to <b>g</b> and weigh your recipe dose once.
+	                </div>
+
+	                <div class="divider"></div>
+	                <div class="section-h">
+	                  <h3>Recipes</h3>
+	                  <p class="muted small">Exports ingredient amounts (no costs) for one recipe per cup size.</p>
+	                </div>
+		                <div class="row-actions">
+		                  <button class="btn" id="btnExportRecipesSheets" type="button">Export Google Sheets</button>
+		                  <button class="btn" id="btnExportRecipesPdf" type="button">Export PDF</button>
+		                </div>
+		                <div class="hint">Google Sheets and PDF exports both support category + drink selection and search. Whole-milk recipe variants are exported by cup size.</div>
+
+		                <div class="divider"></div>
+		                <div class="section-h">
+		                  <h3>Experimental</h3>
+		                  <p class="muted small">Import Square sales CSV to estimate daily cost/profit from your saved drink library.</p>
+		                </div>
+		                <div class="row-actions">
+		                  <button class="btn" id="btnImportSquareSalesCsv" type="button">Import Square Sales CSV</button>
+		                  <button class="btn" id="btnClearSquareSales" type="button">Clear report</button>
+		                </div>
+		                <div class="hint" id="squareSalesStatus">No Square sales CSV imported yet.</div>
+		                <div id="squareSalesSummary"></div>
+		                <div id="squareSalesMatchedWrap"></div>
+		                <div id="squareSalesUnmatchedWrap"></div>
+		              </div>
+		            </div>
+
+            <div class="hidden" aria-hidden="true">
+              <button class="btn ok" id="btnSeed" type="button">Load sample data</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- INGREDIENT MODAL -->
+      <dialog class="modal" id="modalIngredient" aria-label="Ingredient">
+        <form method="dialog" class="modal-card" id="ingredientForm">
+          <div class="modal-h">
+              <div>
+                <div class="modal-title" id="ingredientModalTitle">New ingredient</div>
+              <div class="muted small">Cost per unit is calculated from purchase data, or overridden manually.</div>
+            </div>
+            <div class="modal-h-actions">
+              <button class="btn primary" type="button" id="btnSaveIngredientTop">Save ingredient</button>
+              <button class="icon-btn" type="button" id="btnCloseIngredient" aria-label="Close">✕</button>
+            </div>
+          </div>
+          <div class="modal-b">
+              <div class="form-grid">
+                  <div class="span2">
+                <label for="ingName">Name</label>
+                <input id="ingName" autocomplete="off" placeholder="e.g., Whole milk" />
+                <div class="field-error" id="errIngName"></div>
+              </div>
+              <div>
+                <label for="ingCategory">Category</label>
+                <input id="ingCategory" autocomplete="off" placeholder="e.g., Milk / Syrup / Cup" />
+                <datalist id="ingredientCategoryOptions"></datalist>
+              </div>
+              <div>
+                <label for="ingUnit">Reporting unit (how you track usage)</label>
+                <select id="ingUnit">
+                  <option value="g">Grams (g)</option>
+                  <option value="oz">Ounces (oz, weight)</option>
+                  <option value="ml">Milliliters (ml)</option>
+                  <option value="each">Each</option>
+                  <option value="coffee_pricing">Coffee Pricing (espresso)</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </div>
+              <div id="wrapUnitLabel" class="hidden">
+                <label for="ingUnitLabel">Custom unit label</label>
+                <input id="ingUnitLabel" autocomplete="off" placeholder="e.g., pump, shot, scoop" />
+              </div>
+              <div id="wrapCoffeePricing" class="hidden span2">
+                <div class="form-grid">
+                  <div>
+                    <label for="coffeePricePerLb">Price per lb</label>
+                    <div class="money">
+                      <span class="prefix" id="currencyPrefix6">$</span>
+                      <input id="coffeePricePerLb" inputmode="decimal" placeholder="e.g., 18.00" />
+                    </div>
+                  </div>
+                  <div>
+                    <label for="coffeeDoseGrams">Grams per unit (dose)</label>
+                    <input id="coffeeDoseGrams" inputmode="decimal" placeholder="e.g., 18" />
+                  </div>
+                  <div>
+                    <label for="coffeeUnitLabel">Unit label</label>
+                    <input id="coffeeUnitLabel" autocomplete="off" placeholder="e.g., shot" />
+                    <p class="hint">In Builder, quantity will be counted in this unit (e.g., 2 shots).</p>
+                  </div>
+                </div>
+              </div>
+              <div id="wrapPurchasePrice">
+                <label for="ingPurchasePrice">Price per 1 container</label>
+                <div class="money">
+                  <span class="prefix" id="currencyPrefix4">$</span>
+                  <input id="ingPurchasePrice" inputmode="decimal" placeholder="0.00" />
+                </div>
+              </div>
+		              <div id="wrapPurchaseAmount">
+		                <label for="ingPurchaseAmount">Purchase amount</label>
+		                <div class="with-select">
+	                  <select id="ingPurchaseUnit" aria-label="Purchase unit">
+	                    <option value="g">G (grams)</option>
+	                    <option value="oz">OZ (weight)</option>
+	                    <option value="floz">OZ (fl oz)</option>
+	                    <option value="ml">ML</option>
+	                    <option value="l">L</option>
+	                    <option value="quart">Quart</option>
+	                    <option value="half_gallon">Half Gallon</option>
+	                    <option value="gallon">Gallon</option>
+	                    <option value="each">Each</option>
+	                  </select>
+	                  <input id="ingPurchaseAmount" inputmode="decimal" placeholder="Size of container" />
+	                </div>
+		                <div class="field-error" id="errIngPurchaseAmount"></div>
+		              </div>
+		              <div class="span2">
+		                <div class="section-h">
+		                  <h3>Ingredient price override (optional)</h3>
+		                  <button class="btn" id="btnToggleIngCostOverride" type="button">Enable</button>
+		                </div>
+		                <div id="wrapIngCostOverride" class="hidden">
+		                  <label for="ingCostOverride">Price per reporting unit</label>
+		                  <div class="money">
+		                    <span class="prefix" id="currencyPrefix10">$</span>
+		                    <input id="ingCostOverride" inputmode="decimal" placeholder="e.g., 0.1200" />
+		                  </div>
+		                  <p class="hint">Overrides container-based unit cost for this reporting unit.</p>
+		                </div>
+		              </div>
+		              <div id="wrapIngUpcharge">
+		                <label for="ingUpcharge">Upcharge (optional)</label>
+		                <div class="money">
+	                  <span class="prefix" id="currencyPrefix9">$</span>
+	                  <input id="ingUpcharge" inputmode="decimal" placeholder="0.00" />
+	                </div>
+	                <p class="hint">Adds to the drink's selling price when this ingredient is used.</p>
+	              </div>
+	              <div class="span2">
+	                <label for="ingNotes">Notes (optional)</label>
+	                <textarea id="ingNotes" placeholder="Brand, supplier, SKU, etc."></textarea>
+	              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="kpi mini">
+              <div class="tile">
+                <div class="k">Estimated unit cost</div>
+                <div class="v" id="ingUnitCost">$0.0000 / unit</div>
+                <div class="s" id="ingUnitCostHint">—</div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="section-h">
+              <h3>Calculator</h3>
+              <button class="btn" id="btnToggleCalc" type="button">Open</button>
+            </div>
+            <div id="calcPanel" class="hidden" aria-label="Calculator">
+              <div class="form-grid">
+                <div class="span2">
+                  <label for="calcExpr">Expression</label>
+                  <input id="calcExpr" autocomplete="off" inputmode="decimal" placeholder="e.g., (12.99 + 4.50) / 64" />
+                  <p class="hint">Press <b>=</b> (or Enter) to calculate.</p>
+                </div>
+              </div>
+              <div class="calc-keys" id="calcKeys" aria-label="Calculator keypad">
+                <button class="btn calc danger" type="button" data-calc-key="C">C</button>
+                <button class="btn calc" type="button" data-calc-key="(">(</button>
+                <button class="btn calc" type="button" data-calc-key=")">)</button>
+                <button class="btn calc" type="button" data-calc-key="BS">⌫</button>
+
+                <button class="btn calc" type="button" data-calc-key="7">7</button>
+                <button class="btn calc" type="button" data-calc-key="8">8</button>
+                <button class="btn calc" type="button" data-calc-key="9">9</button>
+                <button class="btn calc" type="button" data-calc-key="/">÷</button>
+
+                <button class="btn calc" type="button" data-calc-key="4">4</button>
+                <button class="btn calc" type="button" data-calc-key="5">5</button>
+                <button class="btn calc" type="button" data-calc-key="6">6</button>
+                <button class="btn calc" type="button" data-calc-key="*">×</button>
+
+                <button class="btn calc" type="button" data-calc-key="1">1</button>
+                <button class="btn calc" type="button" data-calc-key="2">2</button>
+                <button class="btn calc" type="button" data-calc-key="3">3</button>
+                <button class="btn calc" type="button" data-calc-key="-">−</button>
+
+                <button class="btn calc" type="button" data-calc-key="0">0</button>
+                <button class="btn calc" type="button" data-calc-key=".">.</button>
+                <button class="btn calc" type="button" data-calc-key="+">+</button>
+                <button class="btn calc ok" type="button" data-calc-key="=">=</button>
+              </div>
+              <div class="calc-result">
+                <div class="muted small">Result</div>
+                <div class="calc-value" id="calcResult">—</div>
+                <div class="field-error" id="calcError"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-f">
+            <button class="btn danger" id="btnDeleteIngredient" type="button">Delete</button>
+            <div class="spacer"></div>
+            <button class="btn" id="btnCancelIngredient" type="button">Cancel</button>
+            <button class="btn primary" id="btnSaveIngredient" type="button">Save ingredient</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- MILK MODAL -->
+      <dialog class="modal" id="modalMilk" aria-label="Milk">
+        <form method="dialog" class="modal-card" id="milkForm">
+          <div class="modal-h">
+            <div>
+              <div class="modal-title" id="milkModalTitle">New milk</div>
+              <div class="muted small">Link a milk to an ingredient and add an upcharge.</div>
+            </div>
+            <button class="icon-btn" type="button" id="btnCloseMilk" aria-label="Close">✕</button>
+          </div>
+          <div class="modal-b">
+            <div class="form-grid">
+              <div class="span2">
+                <label for="milkName">Name</label>
+                <input id="milkName" autocomplete="off" placeholder="e.g., Oat Milk" />
+                <div class="field-error" id="errMilkName"></div>
+              </div>
+              <div>
+                <label for="milkCategory">Category</label>
+                <select id="milkCategory"></select>
+              </div>
+              <div class="span2">
+                <label for="milkIngredient">Ingredient</label>
+                <select id="milkIngredient"></select>
+                <div class="row-actions">
+                  <button class="btn" id="btnMilkNewIngredient" type="button">New ingredient</button>
+                  <button class="btn" id="btnMilkEditIngredient" type="button">Edit ingredient</button>
+                </div>
+                <div class="field-error" id="errMilkIngredient"></div>
+              </div>
+              <div>
+                <label for="milkUpcharge">Upcharge</label>
+                <div class="money">
+                  <span class="prefix" id="currencyPrefixMilk">$</span>
+                  <input id="milkUpcharge" inputmode="decimal" placeholder="e.g., 0.75" />
+                </div>
+              </div>
+              <div class="span2">
+                <label for="milkNotes">Notes (optional)</label>
+                <textarea id="milkNotes" placeholder="Brand, supplier, details, etc."></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="modal-f">
+            <button class="btn danger" id="btnDeleteMilk" type="button">Delete</button>
+            <div class="spacer"></div>
+            <button class="btn" id="btnCancelMilk" type="button">Cancel</button>
+            <button class="btn primary" id="btnSaveMilk" type="button">Save milk</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- CUP MODAL -->
+      <dialog class="modal" id="modalCup" aria-label="Cup">
+        <form method="dialog" class="modal-card" id="cupForm">
+          <div class="modal-h">
+            <div>
+              <div class="modal-title" id="cupModalTitle">New cup</div>
+              <div class="muted small">Set purchase price + qty, or enter an optional manual price per cup.</div>
+            </div>
+            <button class="icon-btn" type="button" id="btnCloseCup" aria-label="Close">✕</button>
+          </div>
+          <div class="modal-b">
+            <div class="form-grid">
+              <div class="span2">
+                <label for="cupName">Name</label>
+                <input id="cupName" autocomplete="off" placeholder="e.g., 12oz hot cup" />
+                <div class="field-error" id="errCupName"></div>
+              </div>
+              <div style="display:none">
+                <label for="cupSizeLabel">Size label (optional)</label>
+                <input id="cupSizeLabel" autocomplete="off" placeholder="e.g., 12oz hot" />
+              </div>
+              <div>
+                <label for="cupTemp">Temperature</label>
+                <select id="cupTemp">
+                  <option value="">Select temperature…</option>
+                  <option value="hot">Hot</option>
+                  <option value="iced">Iced</option>
+                </select>
+                <div class="field-error" id="errCupTemp"></div>
+              </div>
+              <div>
+                <label for="cupPurchasePrice">Purchase price</label>
+                <div class="money">
+                  <span class="prefix" id="currencyPrefix5">$</span>
+                  <input id="cupPurchasePrice" inputmode="decimal" placeholder="0.00" />
+                </div>
+              </div>
+              <div>
+                <label for="cupPurchaseQty">Purchase quantity (each)</label>
+                <input id="cupPurchaseQty" inputmode="decimal" placeholder="e.g., 1000" />
+                <div class="field-error" id="errCupPurchaseQty"></div>
+              </div>
+              <div>
+                <label for="cupEachPrice">Price per cup (optional)</label>
+                <div class="money">
+                  <span class="prefix" id="currencyPrefix8">$</span>
+                  <input id="cupEachPrice" inputmode="decimal" placeholder="e.g., 0.12" />
+                </div>
+                <p class="hint">If set, this overrides purchase price and quantity.</p>
+              </div>
+              <div class="span2">
+                <label for="cupNotes">Notes (optional)</label>
+                <textarea id="cupNotes" placeholder="Brand, supplier, SKU, etc."></textarea>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="kpi mini">
+              <div class="tile">
+                <div class="k">Estimated cup cost</div>
+                <div class="v" id="cupUnitCost">$0.0000 / each</div>
+                <div class="s" id="cupUnitCostHint">—</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-f">
+            <button class="btn danger" id="btnDeleteCup" type="button">Delete</button>
+            <div class="spacer"></div>
+            <button class="btn" id="btnCancelCup" type="button">Cancel</button>
+            <button class="btn primary" id="btnSaveCup" type="button">Save cup</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- MODIFIER MODAL -->
+      <dialog class="modal" id="modalModifier" aria-label="Modifier">
+        <form method="dialog" class="modal-card" id="modifierForm">
+          <div class="modal-h">
+            <div>
+              <div class="modal-title" id="modifierModalTitle">New modifier</div>
+              <div class="muted small">Create reusable modifier rules for matching and cost/profit overlays.</div>
+            </div>
+            <button class="icon-btn" type="button" id="btnCloseModifier" aria-label="Close">✕</button>
+          </div>
+          <div class="modal-b">
+            <div class="form-grid">
+              <div>
+                <label for="modifierName">Modifier name</label>
+                <input id="modifierName" autocomplete="off" placeholder="e.g., Extra shot" />
+                <div class="field-error" id="errModifierName"></div>
+              </div>
+              <div>
+                <label for="modifierType">Type</label>
+                <input id="modifierType" autocomplete="off" placeholder="e.g., Espresso / Syrup / Milk" />
+              </div>
+              <div class="span2">
+                <label for="modifierAliases">Aliases (comma-separated)</label>
+                <textarea id="modifierAliases" placeholder="e.g., add shot, extra espresso shot, xshot"></textarea>
+                <p class="hint">Used by CSV matching. Add all common POS phrases.</p>
+              </div>
+              <div>
+                <label for="modifierDefaultQty">Default quantity</label>
+                <input id="modifierDefaultQty" inputmode="decimal" placeholder="1" />
+              </div>
+              <div>
+                <label for="modifierCostDelta">Cost increase per apply</label>
+                <div class="money">
+                  <span class="prefix" id="currencyPrefixModifierCost">$</span>
+                  <input id="modifierCostDelta" inputmode="decimal" placeholder="0.00" />
+                </div>
+              </div>
+              <div>
+                <label for="modifierPriceDelta">Price increase per apply</label>
+                <div class="money">
+                  <span class="prefix" id="currencyPrefixModifierPrice">$</span>
+                  <input id="modifierPriceDelta" inputmode="decimal" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="span2">
+                <label for="modifierNotes">Notes (optional)</label>
+                <textarea id="modifierNotes" placeholder="Internal notes, channel-specific behavior, exceptions, etc."></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="modal-f">
+            <button class="btn danger" id="btnDeleteModifier" type="button">Delete</button>
+            <div class="spacer"></div>
+            <button class="btn" id="btnCancelModifier" type="button">Cancel</button>
+            <button class="btn primary" id="btnSaveModifier" type="button">Save modifier</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- VARIANT GENERATOR MODAL -->
+      <dialog class="modal" id="modalVariants" aria-label="Generate variants">
+	        <form method="dialog" class="modal-card" id="variantsForm">
+	          <div class="modal-h">
+	            <div>
+	              <div class="modal-title">Generate variants</div>
+	              <div class="pill" id="variantForDrink">Drink: —</div>
+	            </div>
+	          </div>
+		          <div class="modal-b">
+		            <div class="form-grid">
+			              <div class="span2">
+			                <label>Base drink</label>
+			                <select id="variantBaseDrink" aria-label="Base drink"></select>
+			              </div>
+			              <div class="span2">
+			                <label>Cup variants</label>
+			                <div class="check-grid" id="variantCupList" aria-label="Cup variants list"></div>
+			                <div class="row-actions">
+			                  <button class="btn" id="btnSelectAllCups" type="button">Select all</button>
+			                  <button class="btn" id="btnSelectNoneCups" type="button">None</button>
+			                </div>
+			              </div>
+			              <div class="span2">
+				                <label>Milk variants</label>
+				                <div class="check-grid" id="variantMilkList" aria-label="Milk variants list"></div>
+	                <div class="row-actions">
+	                  <button class="btn" id="btnSelectAllMilks" type="button">Select all</button>
+	                  <button class="btn" id="btnSelectNoneMilks" type="button">None</button>
+	                </div>
+	              </div>
+
+	              <div class="span2">
+	                <label>Per-cup ingredient amounts (optional)</label>
+	                <p class="hint">
+	                  If cup sizes use the same ingredients but different amounts, adjust the quantities here before generating. Selected
+	                  variant ingredients will appear here too.
+	                </p>
+	                <div class="variant-flavor-controls">
+	                  <div class="muted small">Ingredient variants (optional)</div>
+	                  <div class="variant-flavor-row">
+	                    <select id="variantFlavorSelect" aria-label="Add ingredient variant"></select>
+	                    <button class="btn" id="btnAddVariantFlavor" type="button">Add</button>
+	                    <button class="btn" id="btnClearVariantFlavors" type="button">Clear</button>
+	                  </div>
+	                  <div class="variant-chip-row" id="variantFlavorChips" aria-label="Selected flavors"></div>
+	                </div>
+	                <div class="table-wrap" id="variantQtyMatrixWrap" aria-label="Per-cup amount matrix"></div>
+	              </div>
+	            </div>
+	          </div>
+          <div class="modal-f">
+            <button class="btn" id="btnCancelVariants" type="button">Cancel</button>
+            <button class="btn primary" id="btnGenerateVariantsOk" type="button">Generate</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- CATEGORY MANAGER MODAL -->
+      <dialog class="modal" id="modalCategoryManager" aria-label="Category manager">
+        <form class="modal-card" method="dialog" onsubmit="return false;">
+          <div class="modal-h">
+            <div>
+              <div class="modal-title">Category manager</div>
+              <div class="muted small">Create, edit, and delete drink categories.</div>
+            </div>
+            <button class="icon-btn" type="button" id="btnCloseCategoryManager" aria-label="Close">✕</button>
+          </div>
+          <div class="modal-b">
+            <div>
+              <label for="categoryManagerName">New category</label>
+              <div class="with-btn">
+                <input id="categoryManagerName" autocomplete="off" placeholder="e.g., Latte" />
+                <button class="btn primary" id="btnAddCategoryManager" type="button">Add</button>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="table-wrap" id="categoryManagerListWrap"></div>
+          </div>
+          <div class="modal-f">
+            <button class="btn" id="btnCancelCategoryManager" type="button">Done</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- INGREDIENT CATEGORY MANAGER MODAL -->
+      <dialog class="modal" id="modalIngredientCategoryManager" aria-label="Ingredient category manager">
+        <form class="modal-card" method="dialog" onsubmit="return false;">
+          <div class="modal-h">
+            <div>
+              <div class="modal-title">Ingredient category manager</div>
+              <div class="muted small">Create, edit, and delete ingredient categories.</div>
+            </div>
+            <button class="icon-btn" type="button" id="btnCloseIngredientCategoryManager" aria-label="Close">✕</button>
+          </div>
+          <div class="modal-b">
+            <div>
+              <label for="ingredientCategoryManagerName">New category</label>
+              <div class="with-btn">
+                <input id="ingredientCategoryManagerName" autocomplete="off" placeholder="e.g., Syrup" />
+                <button class="btn primary" id="btnAddIngredientCategoryManager" type="button">Add</button>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="table-wrap" id="ingredientCategoryManagerListWrap"></div>
+          </div>
+          <div class="modal-f">
+            <button class="btn" id="btnCancelIngredientCategoryManager" type="button">Done</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- MILK CATEGORY MANAGER MODAL -->
+      <dialog class="modal" id="modalMilkCategoryManager" aria-label="Milk category manager">
+        <form class="modal-card" method="dialog" onsubmit="return false;">
+          <div class="modal-h">
+            <div>
+              <div class="modal-title">Milk category manager</div>
+              <div class="muted small">Create, edit, and delete milk categories.</div>
+            </div>
+            <button class="icon-btn" type="button" id="btnCloseMilkCategoryManager" aria-label="Close">✕</button>
+          </div>
+          <div class="modal-b">
+            <div>
+              <label for="milkCategoryManagerName">New category</label>
+              <div class="with-btn">
+                <input id="milkCategoryManagerName" autocomplete="off" placeholder="e.g., Alternative Milk" />
+                <button class="btn primary" id="btnAddMilkCategoryManager" type="button">Add</button>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="table-wrap" id="milkCategoryManagerListWrap"></div>
+          </div>
+          <div class="modal-f">
+            <button class="btn" id="btnCancelMilkCategoryManager" type="button">Done</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- RECIPE CSV EXPORT MODAL -->
+      <dialog class="modal" id="modalRecipeExportCsv" aria-label="Export recipes to Google Sheets">
+        <form class="modal-card" method="dialog" onsubmit="return false;">
+	          <div class="modal-h">
+	            <div>
+	              <div class="modal-title" id="recipeExportModalTitle">Export to Google Sheets</div>
+	              <div class="muted small" id="recipeExportModalHint">Choose categories, then use + to expand and search specific drinks.</div>
+	            </div>
+            <button class="icon-btn" type="button" id="btnCloseRecipeExportCsv" aria-label="Close">✕</button>
+          </div>
+          <div class="modal-b">
+            <div class="section-h">
+              <h3>Categories</h3>
+              <div class="row-actions">
+                <button class="btn small" id="btnRecipeExportCatsAll" type="button">Select all</button>
+                <button class="btn small" id="btnRecipeExportCatsNone" type="button">None</button>
+              </div>
+            </div>
+            <div class="check-grid" id="recipeExportCategoryList"></div>
+          </div>
+          <div class="modal-f">
+            <button class="btn" id="btnCancelRecipeExportCsv" type="button">Cancel</button>
+            <button class="btn primary" id="btnConfirmRecipeExportCsv" type="button">Export CSV</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- LIBRARY ORGANIZE MODAL -->
+      <dialog class="modal" id="modalLibraryOrganize" aria-label="Library organize">
+        <div class="modal-card">
+          <div class="modal-h">
+            <div>
+              <div class="modal-title">Library view</div>
+              <div class="muted small">Choose how variant names are displayed in the Library list.</div>
+            </div>
+            <button class="icon-btn" type="button" id="btnCloseLibraryOrganize" aria-label="Close">✕</button>
+          </div>
+          <div class="modal-b">
+            <label>Variant description</label>
+            <div class="results-tabs" role="tablist" aria-label="Variant description style">
+              <button class="mini-tab" id="libraryDescDetailed" type="button">Detailed</button>
+              <button class="mini-tab" id="libraryDescSimple" type="button">Simple</button>
+            </div>
+            <p class="hint">
+              Detailed shows size + Hot/Iced + full milk + ingredient variant. Simple hides Hot/Iced and shortens names (brand + "Syrup/Sauce" removed).
+            </p>
+            <label>Sort</label>
+            <div class="results-tabs" role="tablist" aria-label="Library sort mode">
+              <button class="mini-tab" id="librarySortFamily" type="button">A–Z</button>
+              <button class="mini-tab" id="librarySortCategory" type="button">By category</button>
+              <button class="mini-tab" id="librarySortType" type="button">By drink type</button>
+            </div>
+            <p class="hint">Category and drink type views add a header, then show collapsible drink families and all variants underneath.</p>
+          </div>
+          <div class="modal-f">
+            <button class="btn" id="btnDoneLibraryOrganize" type="button">Done</button>
+          </div>
+        </div>
+      </dialog>
+
+      <!-- CONFIRM MODAL -->
+      <dialog class="modal" id="modalConfirm" aria-label="Confirm">
+        <div class="modal-card">
+          <div class="modal-h">
+            <div class="modal-title" id="confirmTitle">Confirm</div>
+            <button class="icon-btn" type="button" id="btnCloseConfirm" aria-label="Close">✕</button>
+          </div>
+          <div class="modal-b">
+            <p id="confirmBody" class="confirm-body"></p>
+          </div>
+          <div class="modal-f">
+            <button class="btn" id="btnConfirmCancel" type="button">Cancel</button>
+            <button class="btn danger" id="btnConfirmOk" type="button">Confirm</button>
+          </div>
+        </div>
+      </dialog>
+
+      <!-- INGREDIENT USAGE MODAL -->
+      <dialog class="modal" id="modalIngredientUsage" aria-label="Ingredient usage">
+        <div class="modal-card">
+          <div class="modal-h">
+            <div>
+              <div class="modal-title" id="ingredientUsageTitle">Ingredient usage</div>
+              <div class="muted small">Drinks in the Library using this ingredient.</div>
+            </div>
+            <button class="icon-btn" type="button" id="btnCloseIngredientUsage" aria-label="Close">✕</button>
+          </div>
+          <div class="modal-b" id="ingredientUsageBody"></div>
+          <div class="modal-f">
+            <button class="btn" id="btnCloseIngredientUsage2" type="button">Close</button>
+          </div>
+        </div>
+      </dialog>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <input id="fileImport" type="file" accept="application/json" hidden />
+    <input id="fileImportSquareCsv" type="file" accept=".csv,text/csv" hidden />
+
+    <script defer src="./cv3.js"></script>
+    <script>
+      // Force light theme for CV2
+      document.documentElement.setAttribute('data-theme', 'light');
+
+      const syncModalScrollLock = () => {
+        const isAnyModalOpen = !!document.querySelector("dialog.modal[open]");
+        document.documentElement.classList.toggle("modal-open", isAnyModalOpen);
+        document.body.classList.toggle("modal-open", isAnyModalOpen);
+      };
+
+      window.addEventListener("DOMContentLoaded", () => {
+        const modalNodes = Array.from(document.querySelectorAll("dialog.modal"));
+        const observer = new MutationObserver(syncModalScrollLock);
+        modalNodes.forEach((node) => observer.observe(node, { attributes: true, attributeFilter: ["open"] }));
+        syncModalScrollLock();
+      });
+
+      window.addEventListener("DOMContentLoaded", () => {
+        // Re-force light theme after app JS runs
+        document.documentElement.setAttribute('data-theme', 'light');
+
+        const APP_STATE_KEY = "coffeeDrinkCostTracker.cv2.v1";
+        const CUSTOM_KEY = "coffeeDrinkCostTracker.cv2.ingredientCategories.v1";
+
+        const btnOpen = document.getElementById("btnCreateIngredientCategory");
+        const modal = document.getElementById("modalIngredientCategoryManager");
+        const btnClose = document.getElementById("btnCloseIngredientCategoryManager");
+        const btnDone = document.getElementById("btnCancelIngredientCategoryManager");
+        const btnAdd = document.getElementById("btnAddIngredientCategoryManager");
+        const inputNew = document.getElementById("ingredientCategoryManagerName");
+        const listWrap = document.getElementById("ingredientCategoryManagerListWrap");
+        const ingCategory = document.getElementById("ingCategory");
+        const datalist = document.getElementById("ingredientCategoryOptions");
+        if (!btnOpen || !modal || !btnClose || !btnDone || !btnAdd || !inputNew || !listWrap || !ingCategory || !datalist) return;
+
+        ingCategory.setAttribute("list", "ingredientCategoryOptions");
+
+        const normalizeKey = (v) => String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
+        const escAttr = (v) =>
+          String(v == null ? "" : v)
+            .replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+
+        const loadAppState = () => {
+          try {
+            const raw = localStorage.getItem(APP_STATE_KEY);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === "object" ? parsed : null;
+          } catch {
+            return null;
+          }
+        };
+
+        const saveAppState = (next) => {
+          try {
+            localStorage.setItem(APP_STATE_KEY, JSON.stringify(next));
+          } catch {}
+        };
+
+        const loadCustom = () => {
+          try {
+            const raw = localStorage.getItem(CUSTOM_KEY);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        };
+
+        const saveCustom = (list) => {
+          try {
+            localStorage.setItem(CUSTOM_KEY, JSON.stringify(list));
+          } catch {}
+        };
+
+        const collectIngredientCategories = () => {
+          const state = loadAppState();
+          const byKey = {};
+          if (state && state.ingredients && state.ingredients.byId && typeof state.ingredients.byId === "object") {
+            for (const id of Object.keys(state.ingredients.byId)) {
+              const ing = state.ingredients.byId[id];
+              if (!ing || typeof ing !== "object") continue;
+              const label = String(ing.category || "").trim();
+              if (!label) continue;
+              const key = normalizeKey(label);
+              if (!byKey[key]) byKey[key] = { key, name: label, count: 0 };
+              byKey[key].count += 1;
+            }
+          }
+          for (const name of loadCustom()) {
+            const label = String(name || "").trim();
+            if (!label) continue;
+            const key = normalizeKey(label);
+            if (!byKey[key]) byKey[key] = { key, name: label, count: 0 };
+          }
+          const out = Object.values(byKey);
+          const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+          out.sort((a, b) => collator.compare(a.name, b.name));
+          return out;
+        };
+
+        const writeCategoriesToDatalist = () => {
+          const rows = collectIngredientCategories();
+          datalist.innerHTML = rows.map((r) => `<option value="${escAttr(r.name)}"></option>`).join("");
+        };
+
+        const addCustomCategory = (name) => {
+          const label = String(name || "").trim();
+          if (!label) return false;
+          const key = normalizeKey(label);
+          const current = loadCustom();
+          if (current.some((x) => normalizeKey(x) === key)) return false;
+          current.push(label);
+          const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+          current.sort((a, b) => collator.compare(String(a || ""), String(b || "")));
+          saveCustom(current);
+          return true;
+        };
+
+        const renameCategoryInState = (oldKey, nextName) => {
+          const state = loadAppState();
+          if (!state || !state.ingredients || !state.ingredients.byId) return;
+          for (const id of Object.keys(state.ingredients.byId)) {
+            const ing = state.ingredients.byId[id];
+            if (!ing || typeof ing !== "object") continue;
+            if (normalizeKey(ing.category) === oldKey) ing.category = nextName;
+          }
+          saveAppState(state);
+        };
+
+        const clearCategoryInState = (oldKey) => {
+          const state = loadAppState();
+          if (!state || !state.ingredients || !state.ingredients.byId) return;
+          for (const id of Object.keys(state.ingredients.byId)) {
+            const ing = state.ingredients.byId[id];
+            if (!ing || typeof ing !== "object") continue;
+            if (normalizeKey(ing.category) === oldKey) ing.category = "";
+          }
+          saveAppState(state);
+        };
+
+        const renameCustomCategory = (oldKey, nextName) => {
+          const nextLabel = String(nextName || "").trim();
+          if (!nextLabel) return;
+          const current = loadCustom().filter((name) => normalizeKey(name) !== oldKey);
+          if (!current.some((name) => normalizeKey(name) === normalizeKey(nextLabel))) current.push(nextLabel);
+          const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+          current.sort((a, b) => collator.compare(String(a || ""), String(b || "")));
+          saveCustom(current);
+        };
+
+        const removeCustomCategory = (oldKey) => {
+          const next = loadCustom().filter((name) => normalizeKey(name) !== oldKey);
+          saveCustom(next);
+        };
+
+        const renderManagerList = () => {
+          const rows = collectIngredientCategories();
+          if (!rows.length) {
+            listWrap.innerHTML = `<div class="muted small">No categories yet. Add one above.</div>`;
+            return;
+          }
+          listWrap.innerHTML = `
+            <table>
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th class="right">Ingredients</th>
+                  <th class="right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows
+                  .map(
+                    (r) => `
+                  <tr>
+                    <td><input class="js-ingcat-row-name" data-ingcat-key="${escAttr(r.key)}" value="${escAttr(r.name)}" /></td>
+                    <td class="right mono">${r.count}</td>
+                    <td class="right">
+                      <button class="btn small" type="button" data-ingcat-action="save" data-ingcat-key="${escAttr(r.key)}">Save</button>
+                      <button class="btn danger small" type="button" data-ingcat-action="delete" data-ingcat-key="${escAttr(r.key)}">Delete</button>
+                    </td>
+                  </tr>`
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+          `;
+        };
+
+        const openManager = () => {
+          renderManagerList();
+          writeCategoriesToDatalist();
+          inputNew.value = "";
+          modal.showModal();
+        };
+
+        const closeManager = () => {
+          if (modal.open) modal.close();
+          writeCategoriesToDatalist();
+        };
+
+        const addFromInput = () => {
+          const name = String(inputNew.value || "").trim();
+          if (!name) return;
+          addCustomCategory(name);
+          inputNew.value = "";
+          renderManagerList();
+          writeCategoriesToDatalist();
+        };
+
+        btnOpen.addEventListener("click", openManager);
+        btnClose.addEventListener("click", closeManager);
+        btnDone.addEventListener("click", closeManager);
+        btnAdd.addEventListener("click", addFromInput);
+        inputNew.addEventListener("keydown", (e) => {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+          addFromInput();
+        });
+
+        listWrap.addEventListener("click", (e) => {
+          const target = e.target;
+          if (!(target instanceof HTMLElement)) return;
+          const btn = target.closest("button[data-ingcat-action][data-ingcat-key]");
+          if (!(btn instanceof HTMLElement)) return;
+          const action = btn.getAttribute("data-ingcat-action") || "";
+          const key = btn.getAttribute("data-ingcat-key") || "";
+          if (!action || !key) return;
+          if (action === "save") {
+            const input = Array.from(listWrap.querySelectorAll("input.js-ingcat-row-name[data-ingcat-key]")).find(
+              (el) => el.getAttribute("data-ingcat-key") === key
+            );
+            if (!(input instanceof HTMLInputElement)) return;
+            const nextName = String(input.value || "").trim();
+            if (!nextName) return;
+            renameCategoryInState(key, nextName);
+            renameCustomCategory(key, nextName);
+            if (normalizeKey(ingCategory.value) === key) ingCategory.value = nextName;
+            renderManagerList();
+            writeCategoriesToDatalist();
+            return;
+          }
+          if (action === "delete") {
+            if (!window.confirm("Delete this ingredient category? Ingredients using it will be set blank.")) return;
+            clearCategoryInState(key);
+            removeCustomCategory(key);
+            if (normalizeKey(ingCategory.value) === key) ingCategory.value = "";
+            renderManagerList();
+            writeCategoriesToDatalist();
+          }
+        });
+
+        document.getElementById("btnSaveIngredient")?.addEventListener("click", () => {
+          const category = String(ingCategory.value || "").trim();
+          if (!category) return;
+          addCustomCategory(category);
+          writeCategoriesToDatalist();
+        });
+
+        writeCategoriesToDatalist();
+      });
+    </script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const APP_STATE_KEY = "coffeeDrinkCostTracker.cv2.v1";
+        const ROUTE_KEY = "coffeeDrinkCostTracker.cv2.lastRoute";
+        const table = document.getElementById("ingredientTableWrap");
+        const usageModal = document.getElementById("modalIngredientUsage");
+        const usageTitle = document.getElementById("ingredientUsageTitle");
+        const usageBody = document.getElementById("ingredientUsageBody");
+        const closeUsage = document.getElementById("btnCloseIngredientUsage");
+        const closeUsage2 = document.getElementById("btnCloseIngredientUsage2");
+        if (!table || !usageModal || !usageTitle || !usageBody || !closeUsage || !closeUsage2) return;
+
+        const loadAppState = () => {
+          try {
+            const raw = localStorage.getItem(APP_STATE_KEY);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === "object" ? parsed : null;
+          } catch {
+            return null;
+          }
+        };
+
+        const saveAppState = (next) => {
+          try {
+            localStorage.setItem(APP_STATE_KEY, JSON.stringify(next));
+          } catch {}
+        };
+
+        const saveRoute = (route) => {
+          try {
+            localStorage.setItem(ROUTE_KEY, route);
+          } catch {}
+        };
+
+        const restoreRoute = () => {
+          const route = localStorage.getItem(ROUTE_KEY);
+          if (route !== "ingredients") return;
+          setTimeout(() => {
+            document.querySelector('.tab[data-route="ingredients"]')?.click();
+          }, 0);
+        };
+
+        const escapeHtml = (value) =>
+          String(value == null ? "" : value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+
+        const normalizeText = (value) =>
+          String(value == null ? "" : value)
+            .toLowerCase()
+            .replace(/\s+/g, " ")
+            .trim();
+
+        const isMilkIngredientName = (value) => {
+          const text = normalizeText(value);
+          return /\bmilk\b/.test(text) || text.includes("dairy") || /\bhalf\s*(?:&|and)\s*half\b/.test(text);
+        };
+
+        const detectTempLabel = (drink) => {
+          const state = loadAppState();
+          const cup = drink?.container?.cupId && state?.cups?.byId ? state.cups.byId[drink.container.cupId] : null;
+          const probe = `${cup?.name || ""} ${cup?.sizeLabel || ""} ${drink?.sizeLabel || ""}`;
+          const text = normalizeText(probe);
+          if (/\biced\b/.test(text)) return "Iced";
+          if (/\bhot\b/.test(text)) return "Hot";
+          return "";
+        };
+
+        const detectSizeToken = (drink) => {
+          const state = loadAppState();
+          const cup = drink?.container?.cupId && state?.cups?.byId ? state.cups.byId[drink.container.cupId] : null;
+          const fromText = (text) => {
+            const match = String(text || "").match(/(\d+(?:\.\d+)?)\s*oz\b/i);
+            return match ? `${match[1]}oz` : "";
+          };
+          const fromCup = fromText(`${cup?.sizeLabel || ""} ${cup?.name || ""}`.trim());
+          if (fromCup) return fromCup;
+          return fromText(drink?.sizeLabel || "");
+        };
+
+        const detectMilkVariantName = (drink) => {
+          const state = loadAppState();
+          const milkId = drink?.milkId || "";
+          if (milkId && state?.milks?.byId?.[milkId]?.name) {
+            const name = String(state.milks.byId[milkId].name || "").trim();
+            if (name) return name;
+          }
+          for (const item of drink?.items || []) {
+            const ing = state?.ingredients?.byId?.[item?.ingredientId || ""];
+            if (!ing) continue;
+            if (!isMilkIngredientName(ing.category || "") && !isMilkIngredientName(ing.name || "")) continue;
+            return String(ing.name || "").trim() || "Milk";
+          }
+          return "";
+        };
+
+        const detectFlavorVariantName = (drink) => {
+          const state = loadAppState();
+          for (const item of drink?.items || []) {
+            const ing = state?.ingredients?.byId?.[item?.ingredientId || ""];
+            if (!ing) continue;
+            const cat = normalizeText(ing.category || "");
+            const name = normalizeText(ing.name || "");
+            if (cat.includes("syrup") || cat.includes("sauce") || name.includes("syrup") || name.includes("sauce")) {
+              return String(ing.name || "").trim() || "Flavor";
+            }
+          }
+          return "";
+        };
+
+        const drinkVariantLabel = (drink) =>
+          [detectSizeToken(drink), detectTempLabel(drink), detectMilkVariantName(drink), detectFlavorVariantName(drink), drink?.name || ""]
+            .filter(Boolean)
+            .join(" ")
+            .trim();
+
+        const closeUsageModal = () => {
+          if (usageModal.open) usageModal.close();
+        };
+
+        const openUsageModal = (ingredientId) => {
+          const state = loadAppState();
+          if (!state || !state.drinks || !state.drinks.byId) return;
+          const ing = state.ingredients?.byId?.[ingredientId];
+          const ingredientName = ing?.name || "Ingredient";
+          const drinks = (state.drinks.order || [])
+            .map((drinkId) => state.drinks.byId[drinkId])
+            .filter((drink) => !!drink && Array.isArray(drink.items) && drink.items.some((item) => item.ingredientId === ingredientId));
+
+          usageTitle.textContent = `${ingredientName} usage`;
+          if (!drinks.length) {
+            usageBody.innerHTML = `<div class="muted small">No drinks in the Library use this ingredient.</div>`;
+          } else {
+            usageBody.innerHTML = `
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Variant</th>
+                      <th>Category</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${drinks
+                      .map(
+                        (drink) => `
+                          <tr>
+                            <td><b>${escapeHtml(drinkVariantLabel(drink) || drink.name || "Drink")}</b></td>
+                            <td>${escapeHtml(drink.category || "—")}</td>
+                          </tr>`
+                      )
+                      .join("")}
+                  </tbody>
+                </table>
+              </div>
+            `;
+          }
+          usageModal.showModal();
+        };
+
+        const deleteIngredient = (ingredientId) => {
+          const state = loadAppState();
+          if (!state || !state.ingredients || !state.ingredients.byId) return;
+          const ing = state.ingredients.byId[ingredientId];
+          if (!ing) return;
+
+          const drinksUsingIngredient = Array.isArray(state.drinks?.order)
+            ? state.drinks.order.filter((drinkId) => {
+                const drink = state.drinks.byId?.[drinkId];
+                return !!drink && Array.isArray(drink.items) && drink.items.some((item) => item.ingredientId === ingredientId);
+              })
+            : [];
+
+          const linkedMilkIds = Array.isArray(state.milks?.order)
+            ? state.milks.order.filter((milkId) => state.milks.byId?.[milkId]?.ingredientId === ingredientId)
+            : [];
+
+          const linkedMilkUsedByDrink = linkedMilkIds.some((milkId) =>
+            Array.isArray(state.drinks?.order)
+              ? state.drinks.order.some((drinkId) => state.drinks.byId?.[drinkId]?.milkId === milkId)
+              : false
+          );
+
+          if (drinksUsingIngredient.length || linkedMilkUsedByDrink) {
+            window.alert("Cannot delete: ingredient is used by saved drinks.");
+            return;
+          }
+
+          const milkNote = linkedMilkIds.length
+            ? `\nThis will also remove ${linkedMilkIds.length} linked milk library item${linkedMilkIds.length === 1 ? "" : "s"}.`
+            : "";
+          if (!window.confirm(`Delete "${ing.name || "ingredient"}"? This cannot be undone.${milkNote}`)) return;
+
+          delete state.ingredients.byId[ingredientId];
+          state.ingredients.order = (state.ingredients.order || []).filter((id) => id !== ingredientId);
+
+          for (const milkId of linkedMilkIds) {
+            delete state.milks.byId[milkId];
+          }
+          state.milks.order = (state.milks.order || []).filter((id) => !linkedMilkIds.includes(id));
+
+          if (state.ui?.draftDrink?.items) {
+            state.ui.draftDrink.items.forEach((item) => {
+              if (item.ingredientId === ingredientId) item.ingredientId = null;
+            });
+          }
+
+          if (state.ui?.draftDrink?.milkId && linkedMilkIds.includes(state.ui.draftDrink.milkId)) {
+            state.ui.draftDrink.milkId = null;
+          }
+
+          for (const drinkId of state.drinks?.order || []) {
+            const drink = state.drinks.byId?.[drinkId];
+            if (!drink) continue;
+            if (drink.milkId && linkedMilkIds.includes(drink.milkId)) drink.milkId = null;
+          }
+
+          if (Array.isArray(state.ui?.librarySelectedDrinkIds)) {
+            state.ui.librarySelectedDrinkIds = state.ui.librarySelectedDrinkIds.filter(
+              (drinkId) => state.drinks.byId?.[drinkId]
+            );
+          }
+
+          saveRoute("ingredients");
+          saveAppState(state);
+          window.location.reload();
+        };
+
+        const decorateUsageButtons = () => {
+          table.querySelectorAll("tbody tr").forEach((row) => {
+            const usedByCell = row.children?.[5];
+            if (!usedByCell) return;
+            const ingredientId = row.querySelector("button[data-ingredient-id][data-action='edit']")?.getAttribute("data-ingredient-id") || "";
+            if (!ingredientId) return;
+            if (usedByCell.querySelector("button[data-ingredient-usage-id]")) return;
+
+            const count = usedByCell.textContent || "";
+            usedByCell.textContent = "";
+
+            const countSpan = document.createElement("span");
+            countSpan.className = "mono";
+            countSpan.textContent = count.trim();
+
+            const plusBtn = document.createElement("button");
+            plusBtn.type = "button";
+            plusBtn.className = "btn small";
+            plusBtn.style.marginLeft = "8px";
+            plusBtn.dataset.ingredientUsageId = ingredientId;
+            plusBtn.textContent = "+";
+            plusBtn.title = "Show drinks using this ingredient";
+            plusBtn.setAttribute("aria-label", "Show drinks using this ingredient");
+
+            usedByCell.appendChild(countSpan);
+            usedByCell.appendChild(plusBtn);
+          });
+        };
+
+        const syncDeleteButtons = () => {
+          table.querySelectorAll("button[data-action='archive'], button[data-action='unarchive']").forEach((btn) => {
+            btn.dataset.action = "delete";
+            btn.classList.add("danger");
+            btn.textContent = "Delete";
+          });
+        };
+
+        table.addEventListener(
+          "click",
+          (e) => {
+            const target = e.target;
+            if (!(target instanceof HTMLElement)) return;
+            const usageBtn = target.closest("button[data-ingredient-usage-id]");
+            if (usageBtn) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              const ingredientId = usageBtn.getAttribute("data-ingredient-usage-id") || "";
+              if (ingredientId) openUsageModal(ingredientId);
+              return;
+            }
+            const btn = target.closest("button[data-ingredient-id][data-action='delete']");
+            if (!btn) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            const id = btn.getAttribute("data-ingredient-id") || "";
+            if (id) deleteIngredient(id);
+          },
+          true
+        );
+
+        closeUsage.addEventListener("click", closeUsageModal);
+        closeUsage2.addEventListener("click", closeUsageModal);
+        usageModal.addEventListener("close", closeUsageModal);
+
+        new MutationObserver(() => {
+          syncDeleteButtons();
+          decorateUsageButtons();
+        }).observe(table, { childList: true, subtree: true });
+        syncDeleteButtons();
+        decorateUsageButtons();
+
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.addEventListener("click", () => {
+            const route = tab.getAttribute("data-route") || "";
+            if (route) saveRoute(route);
+          });
+        });
+
+        restoreRoute();
+      });
+    </script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const APP_STATE_KEY = "coffeeDrinkCostTracker.cv2.v1";
+        const DEFAULT_BG = "#f0fdf4";
+        const DEFAULT_TEXT = "#166534";
+        const bgInput = document.getElementById("libraryCategoryHeaderBg");
+        const textInput = document.getElementById("libraryCategoryHeaderText");
+        const resetBtn = document.getElementById("btnResetLibraryCategoryHeaderColors");
+        if (!bgInput || !textInput || !resetBtn) return;
+
+        const loadState = () => {
+          try {
+            const raw = localStorage.getItem(APP_STATE_KEY);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === "object" ? parsed : null;
+          } catch {
+            return null;
+          }
+        };
+
+        const saveState = (next) => {
+          try {
+            localStorage.setItem(APP_STATE_KEY, JSON.stringify(next));
+          } catch {}
+        };
+
+        const normalizeColor = (value, fallback) => {
+          const next = String(value || "").trim();
+          return /^#[0-9a-fA-F]{6}$/.test(next) ? next : fallback;
+        };
+
+        const applyColors = (bg, text) => {
+          document.documentElement.style.setProperty("--library-category-header-bg", bg);
+          document.documentElement.style.setProperty("--library-category-header-color", text);
+        };
+
+        const syncFromState = () => {
+          const state = loadState();
+          const settings = state?.settings || {};
+          const bg = normalizeColor(settings.libraryCategoryHeaderBg, DEFAULT_BG);
+          const text = normalizeColor(settings.libraryCategoryHeaderText, DEFAULT_TEXT);
+          bgInput.value = bg;
+          textInput.value = text;
+          applyColors(bg, text);
+        };
+
+        const persist = () => {
+          const state = loadState() || {};
+          if (!state.settings || typeof state.settings !== "object") state.settings = {};
+          const bg = normalizeColor(bgInput.value, DEFAULT_BG);
+          const text = normalizeColor(textInput.value, DEFAULT_TEXT);
+          state.settings.libraryCategoryHeaderBg = bg;
+          state.settings.libraryCategoryHeaderText = text;
+          saveState(state);
+          applyColors(bg, text);
+        };
+
+        bgInput.addEventListener("input", persist);
+        textInput.addEventListener("input", persist);
+        resetBtn.addEventListener("click", () => {
+          bgInput.value = DEFAULT_BG;
+          textInput.value = DEFAULT_TEXT;
+          persist();
+        });
+
+        syncFromState();
+      });
+    </script>
+  </body>
+</html>
