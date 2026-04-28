@@ -878,51 +878,83 @@
         measurementId: "G-L6M5TW9N7F"
       };
 
-      const app = initializeApp(firebaseConfig);
-      isAnalyticsSupported().then((supported) => {
-        if (supported) getAnalytics(app);
-      });
-
-      const db = getFirestore(app);
-      const auth = getAuth(app);
-      const userStateRef = (user) => doc(db, "users", user.uid, "gccCloudState", "default");
-      window.gccFirebase = {
-        ready: true,
-        user: null,
-        async loadState() {
-          if (!this.user) return null;
-          const stateRef = userStateRef(this.user);
-          const snapshot = await getDoc(stateRef);
-          return snapshot.exists() ? snapshot.data()?.backup?.state || null : null;
-        },
-        async saveState(backup) {
-          if (!this.user) return;
-          const stateRef = userStateRef(this.user);
-          await setDoc(
-            stateRef,
-            {
-              backup,
-              ownerUid: this.user.uid,
-              updatedAt: serverTimestamp()
-            },
-            { merge: true }
-          );
-        },
-        async createAccount(email, password) {
-          return createUserWithEmailAndPassword(auth, email, password);
-        },
-        async signIn(email, password) {
-          return signInWithEmailAndPassword(auth, email, password);
-        },
-        async signOut() {
-          return signOut(auth);
-        }
+      const firebaseUnavailableMessage = "Cloud login is not configured in this file. Add the Firebase web API key before using cloud sync.";
+      const setFirebaseUnavailable = (message = firebaseUnavailableMessage) => {
+        window.gccFirebase = {
+          ready: true,
+          unavailable: true,
+          unavailableMessage: message,
+          user: null,
+          async loadState() {
+            return null;
+          },
+          async saveState() {},
+          async createAccount() {
+            throw new Error(message);
+          },
+          async signIn() {
+            throw new Error(message);
+          },
+          async signOut() {}
+        };
+        window.dispatchEvent(new CustomEvent("gcc-firebase-ready"));
+        window.dispatchEvent(new CustomEvent("gcc-auth-changed", { detail: { user: null } }));
       };
-      onAuthStateChanged(auth, (user) => {
-        window.gccFirebase.user = user;
-        window.dispatchEvent(new CustomEvent("gcc-auth-changed", { detail: { user } }));
-      });
-      window.dispatchEvent(new CustomEvent("gcc-firebase-ready"));
+
+      if (!firebaseConfig.apiKey) {
+        setFirebaseUnavailable();
+      } else {
+        try {
+          const app = initializeApp(firebaseConfig);
+          isAnalyticsSupported().then((supported) => {
+            if (supported) getAnalytics(app);
+          });
+
+          const db = getFirestore(app);
+          const auth = getAuth(app);
+          const userStateRef = (user) => doc(db, "users", user.uid, "gccCloudState", "default");
+          window.gccFirebase = {
+            ready: true,
+            user: null,
+            async loadState() {
+              if (!this.user) return null;
+              const stateRef = userStateRef(this.user);
+              const snapshot = await getDoc(stateRef);
+              return snapshot.exists() ? snapshot.data()?.backup?.state || null : null;
+            },
+            async saveState(backup) {
+              if (!this.user) return;
+              const stateRef = userStateRef(this.user);
+              await setDoc(
+                stateRef,
+                {
+                  backup,
+                  ownerUid: this.user.uid,
+                  updatedAt: serverTimestamp()
+                },
+                { merge: true }
+              );
+            },
+            async createAccount(email, password) {
+              return createUserWithEmailAndPassword(auth, email, password);
+            },
+            async signIn(email, password) {
+              return signInWithEmailAndPassword(auth, email, password);
+            },
+            async signOut() {
+              return signOut(auth);
+            }
+          };
+          onAuthStateChanged(auth, (user) => {
+            window.gccFirebase.user = user;
+            window.dispatchEvent(new CustomEvent("gcc-auth-changed", { detail: { user } }));
+          });
+          window.dispatchEvent(new CustomEvent("gcc-firebase-ready"));
+        } catch (error) {
+          console.warn("Firebase setup failed.", error);
+          setFirebaseUnavailable("Cloud login could not start. Check the Firebase configuration.");
+        }
+      }
     </script>
 
     <script>
@@ -2110,7 +2142,16 @@ JSON schema:
         };
 
         const renderAuthControls = () => {
-          const user = window.gccFirebase?.user || null;
+          const firebase = window.gccFirebase || null;
+          const user = firebase?.user || null;
+          if (firebase?.unavailable) {
+            dom.authStatus.textContent = "Cloud sync not configured";
+            buttons.btnOpenAuth.style.display = "";
+            buttons.btnSignOut.style.display = "none";
+            cloudStatus = "Cloud: unavailable";
+            renderMetaStatus();
+            return;
+          }
           if (user) {
             dom.authStatus.textContent = `Signed in: ${user.email || user.uid}`;
             buttons.btnOpenAuth.style.display = "none";
@@ -2126,7 +2167,9 @@ JSON schema:
         };
 
         const openAuthModal = () => {
-          dom.authMessage.textContent = "Create an account once, then use the same email and password to sign in later.";
+          dom.authMessage.textContent = window.gccFirebase?.unavailable
+            ? window.gccFirebase.unavailableMessage || "Cloud login is not configured."
+            : "Create an account once, then use the same email and password to sign in later.";
           if (!dom.modalAuth.open) dom.modalAuth.showModal();
         };
 
