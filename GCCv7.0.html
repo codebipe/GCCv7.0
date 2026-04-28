@@ -162,7 +162,6 @@
           <button class="tab" data-route="packaging" type="button">Packaging</button>
           <button class="tab" data-route="overhead" type="button">Overhead</button>
           <button class="tab" data-route="processing-fees" type="button">Processing Fees</button>
-          <button class="tab" data-route="shotty-ai" type="button">Shotty AI</button>
           <button class="tab" data-route="settings" type="button">Settings</button>
         </nav>
         <div class="auth-panel">
@@ -188,16 +187,15 @@
               </div>
               <div class="card-b">
                 <div class="form-grid">
-                  <div>
-                    <label for="coffeeType">Type</label>
-                    <select id="coffeeType" aria-label="Coffee type">
-                      <option value="single-origin">Single origin</option>
-                      <option value="blend">Blend</option>
-                    </select>
-                  </div>
-                  <div>
+                  <div class="span2">
                     <label for="coffeeName">Coffee name</label>
-                    <input id="coffeeName" autocomplete="off" placeholder="e.g., Colombia Huila" />
+                    <div class="coffee-name-type-row">
+                      <input id="coffeeName" autocomplete="off" placeholder="e.g., Colombia Huila" />
+                      <select id="coffeeType" aria-label="Coffee type">
+                        <option value="single-origin">Single origin</option>
+                        <option value="blend">Blend</option>
+                      </select>
+                    </div>
                     <div class="field-error" id="errCoffeeName"></div>
                   </div>
                   <div>
@@ -869,7 +867,7 @@
       } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
       const firebaseConfig = {
-        apiKey: "",
+        apiKey: "AIzaSyCOjSiofBVX0pEbTMzr9frHqgB1PKOLbG4",
         authDomain: "gccv7-46e05.firebaseapp.com",
         projectId: "gccv7-46e05",
         storageBucket: "gccv7-46e05.firebasestorage.app",
@@ -4122,6 +4120,29 @@ JSON schema:
           state.draft.notes = inputs.draft.notes.value.trim();
         };
 
+        let draftPricingSource = "container";
+        let draftBlendPricingSource = "container";
+
+        const resolveDraftPricingSource = () => {
+          const hasPerLb = Math.max(0, toNumber(inputs.draft.pricePerLb.value, 0)) > 0;
+          const hasPerContainer = Math.max(0, toNumber(inputs.draft.pricePerContainer.value, 0)) > 0;
+          if (draftPricingSource === "lb" && hasPerLb) return "lb";
+          if (draftPricingSource === "container" && hasPerContainer) return "container";
+          if (hasPerLb && !hasPerContainer) return "lb";
+          if (hasPerContainer) return "container";
+          return "lb";
+        };
+
+        const resolveDraftBlendPricingSource = () => {
+          const hasPerLb = Math.max(0, toNumber(inputs.draft.blendPricePerLb.value, 0)) > 0;
+          const hasPerContainer = Math.max(0, toNumber(inputs.draft.blendPricePerContainer.value, 0)) > 0;
+          if (draftBlendPricingSource === "lb" && hasPerLb) return "lb";
+          if (draftBlendPricingSource === "container" && hasPerContainer) return "container";
+          if (hasPerLb && !hasPerContainer) return "lb";
+          if (hasPerContainer) return "container";
+          return "lb";
+        };
+
         const syncDraftPricePerLbFromContainer = () => {
           const pricePerContainer = Math.max(0, toNumber(inputs.draft.pricePerContainer.value, 0));
           const shippingCost = Math.max(0, toNumber(inputs.draft.shippingCost.value, 0));
@@ -4286,59 +4307,57 @@ JSON schema:
               } else if (key === "blendComponent2Name") {
                 applySavedSingleOriginToDraftComponent(2, inputs.draft.blendComponent2Name.value);
               } else if (key === "pricePerContainer") {
+                draftPricingSource = "container";
                 syncDraftPricePerLbFromContainer();
               } else if (key === "pricePerLb") {
+                draftPricingSource = "lb";
                 syncDraftPricePerContainerFromLb();
               } else if (key === "shippingFree") {
                 if (inputs.draft.shippingFree.checked) {
                   inputs.draft.shippingCost.value = "0";
                 }
                 inputs.draft.shippingCost.disabled = inputs.draft.shippingFree.checked;
-                const hasContainerPrice = Math.max(0, toNumber(inputs.draft.pricePerContainer.value, 0)) > 0;
-                if (hasContainerPrice) {
+                if (resolveDraftPricingSource() === "container") {
                   syncDraftPricePerLbFromContainer();
                 } else {
                   syncDraftPricePerContainerFromLb();
                 }
               } else if (key === "shippingCost") {
-                const hasContainerPrice = Math.max(0, toNumber(inputs.draft.pricePerContainer.value, 0)) > 0;
-                if (hasContainerPrice) {
+                if (resolveDraftPricingSource() === "container") {
                   syncDraftPricePerLbFromContainer();
                 } else {
                   syncDraftPricePerContainerFromLb();
                 }
               } else if (key === "containerWeightLb" || key === "containerWeightUnit") {
-                const hasContainerPrice = Math.max(0, toNumber(inputs.draft.pricePerContainer.value, 0)) > 0;
-                if (hasContainerPrice) {
+                if (resolveDraftPricingSource() === "container") {
                   syncDraftPricePerLbFromContainer();
                 } else {
                   syncDraftPricePerContainerFromLb();
                 }
               } else if (key === "blendPricePerContainer") {
+                draftBlendPricingSource = "container";
                 syncDraftBlendPricePerLbFromContainer();
               } else if (key === "blendPricePerLb") {
+                draftBlendPricingSource = "lb";
                 syncDraftBlendPricePerContainerFromLb();
               } else if (key === "blendShippingFree") {
                 if (inputs.draft.blendShippingFree.checked) {
                   inputs.draft.blendShippingCost.value = "0";
                 }
                 inputs.draft.blendShippingCost.disabled = inputs.draft.blendShippingFree.checked;
-                const hasBlendContainerPrice = Math.max(0, toNumber(inputs.draft.blendPricePerContainer.value, 0)) > 0;
-                if (hasBlendContainerPrice) {
+                if (resolveDraftBlendPricingSource() === "container") {
                   syncDraftBlendPricePerLbFromContainer();
                 } else {
                   syncDraftBlendPricePerContainerFromLb();
                 }
               } else if (key === "blendShippingCost") {
-                const hasBlendContainerPrice = Math.max(0, toNumber(inputs.draft.blendPricePerContainer.value, 0)) > 0;
-                if (hasBlendContainerPrice) {
+                if (resolveDraftBlendPricingSource() === "container") {
                   syncDraftBlendPricePerLbFromContainer();
                 } else {
                   syncDraftBlendPricePerContainerFromLb();
                 }
               } else if (key === "blendContainerWeightLb" || key === "blendContainerWeightUnit") {
-                const hasBlendContainerPrice = Math.max(0, toNumber(inputs.draft.blendPricePerContainer.value, 0)) > 0;
-                if (hasBlendContainerPrice) {
+                if (resolveDraftBlendPricingSource() === "container") {
                   syncDraftBlendPricePerLbFromContainer();
                 } else {
                   syncDraftBlendPricePerContainerFromLb();
